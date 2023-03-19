@@ -67,7 +67,11 @@ def EvalRK4(initVel=[0,0], initDisp=[0,0],
     print("This simulation hit the earth ", np.sum(earthHits), " times")
 
     if modelMoon:
-        moonHits = (x-Rmoon)**2+(y-Rmoon)**2<Rmoon**2
+        print("Closest Point squared to the moon:")
+        print(np.min((x-moonX)**2+(y-moonY)**2))
+        print("Moon radius squared")
+        print(Rmoon**2)
+        moonHits = (x-moonX)**2+(y-moonY)**2<Rmoon**2
         print("This simulation hit the moon ", np.sum(moonHits), " times")
 
     if plotXY:
@@ -78,7 +82,7 @@ def EvalRK4(initVel=[0,0], initDisp=[0,0],
 
         if modelMoon:
             moon = np.asarray(Image.open(os.getcwd()+"/moon.PNG"))
-            plt.imshow(moon, extent=(-Rmoon, Rmoon, -Rmoon+moonY, Rmoon+moonY), alpha=0.9)
+            plt.imshow(moon, extent=(-Rmoon*6, Rmoon*6, -(Rmoon)*6+moonY, (Rmoon)*6+moonY), alpha=0.9)
 
         plt.plot(x, y, label='Trajectory')
         plt.scatter(x[0], y[0], marker='x', color='red', label='Initial Point')
@@ -145,7 +149,10 @@ while True:
         EvalRK4([0, 8300], [6700000, 0], modelMoon=True)
 
     if answer == 'f':
-        EvalRK4([4746, 12000], [6700000, 0], modelMoon=True, simTime=90000, plotE=False)
+        EvalRK4([4745.2, 12000], [6700000, 0], modelMoon=True, simTime=150000, plotE=False)
+
+    if answer == 'g':
+        EvalRK4([4745, 12006], [6700000, 0], modelMoon=True, simTime=259200, plotE=False, numPoints=50000)
 
 
 

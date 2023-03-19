@@ -63,16 +63,28 @@ def EvalRK4(initVel=[0,0], initDisp=[0,0],
 
     # Now checking if it hits any of the planets
 
-    earthHits = x**2+y**2<Rearth**2
-    print("This simulation hit the earth ", np.sum(earthHits), " times")
-
+    firstEarthHit = np.argmax(x**2+y**2<Rearth**2)
+    firstMoonHit = 0
     if modelMoon:
-        print("Closest Point squared to the moon:")
-        print(np.min((x-moonX)**2+(y-moonY)**2))
-        print("Moon radius squared")
-        print(Rmoon**2)
-        moonHits = (x-moonX)**2+(y-moonY)**2<Rmoon**2
-        print("This simulation hit the moon ", np.sum(moonHits), " times")
+        firstMoonHit = np.argmax((x-moonX)**2+(y-moonY)**2<Rmoon**2)
+
+    if firstEarthHit > 0 and firstMoonHit == 0:
+        print("It has hit the earth!")
+        x, y, vy, vx, t = x[:firstEarthHit], y[:firstEarthHit], \
+                          vy[:firstEarthHit], vx[:firstEarthHit], t[:firstEarthHit]
+    elif firstMoonHit > 0 and firstEarthHit == 0:
+        print("It has hit the moon!")
+        x, y, vy, vx, t = x[:firstMoonHit], y[:firstMoonHit], \
+                          vy[:firstMoonHit], vx[:firstMoonHit], t[:firstMoonHit]
+    elif firstEarthHit > firstMoonHit and firstMoonHit != 0:
+        print("It has hit the moon!")
+        x, y, vy, vx, t = x[:firstMoonHit], y[:firstMoonHit], \
+                          vy[:firstMoonHit], vx[:firstMoonHit], t[:firstMoonHit]
+    elif firstEarthHit < firstMoonHit and firstEarthHit != 0:
+        print("It has hit the earth!")
+        x, y, vy, vx, t = x[:firstEarthHit], y[:firstEarthHit], \
+                          vy[:firstEarthHit], vx[:firstEarthHit], t[:firstEarthHit]
+
 
     if plotXY:
         plt.figure(0)
@@ -82,19 +94,25 @@ def EvalRK4(initVel=[0,0], initDisp=[0,0],
 
         if modelMoon:
             moon = np.asarray(Image.open(os.getcwd()+"/moon.PNG"))
-            plt.imshow(moon, extent=(-Rmoon*6, Rmoon*6, -(Rmoon)*6+moonY, (Rmoon)*6+moonY), alpha=0.9)
+            plt.imshow(moon, extent=(-Rmoon, Rmoon, -Rmoon+moonY, Rmoon+moonY), alpha=0.9)
 
-        plt.plot(x, y, label='Trajectory')
-        plt.scatter(x[0], y[0], marker='x', color='red', label='Initial Point')
+        plt.plot(x, y, label='Trajectory', color='lightblue', lw=0.5)
+        plt.scatter(x[0], y[0], marker='x', color='green', label='Initial Point', s=12)
+
+        if len(x) != numPoints:
+            print("Plotting crash shite")
+            # If the length of the x array isnt the numPoints parameter, it must have crashed.
+            plt.plot(x[-1], y[-1], marker='x', color='red', label='Crash Site')
+
         lim = np.max([np.abs(x), np.abs(y)])
-        border = 1.2
+        border = 1
         lim *= border
         order = int(np.log10(lim))
         centre = (np.mean(x), np.mean(y))
         plt.ylabel('y / 10x'+str(order)+'m')
         plt.xlabel('x / 10x'+str(order)+'m')
-        # plt.xlim(centre[0]-lim, centre[0]+lim)
-        # plt.ylim(centre[1]-lim, centre[1]+lim)
+        plt.xlim(centre[0]-lim, centre[0]+lim)
+        plt.ylim(centre[1]-lim, centre[1]+lim)
         # if plt.ylim()[0] > -Rearth:
         #     plt.ylim(border * np.min(np.append(y, -Rearth)), border * np.max(y))
         # if -plt.xlim()[0]+plt.xlim()[0] < 0.25*(-plt.ylim()[0]+plt.ylim()[1]):
@@ -131,7 +149,8 @@ while True:
                    ' --(c) Satellite orbit around Earth (Comet Passing Fast)\n'
                    ' --(d) Satellite orbit around Earth (Comet Passing Slow)\n'
                    ' --(e) Satellite orbit around Earth (Circular) (With Moon Modeled)\n'
-                   ' --(f) Satellite orbit around Moon and Earth\n')
+                   ' --(f) Satellite orbit around Moon and Earth\n'
+                   ' --(g) Satellite orbit around Moon and Earth (Crash on Moon)\n')
 
     if answer == 'a':
         EvalRK4([0, 8300], [6700000, 0])
@@ -143,19 +162,16 @@ while True:
         EvalRK4([-24000, 11000], [20000000, 0], simTime=3000)
 
     if answer == 'd':
-        EvalRK4([-3000, 5900], [15000000, 0], simTime=50000, plotE=False)
+        EvalRK4([-3000, 5900], [15000000, 0], simTime=50000)
 
     if answer == 'e':
         EvalRK4([0, 8300], [6700000, 0], modelMoon=True)
 
     if answer == 'f':
-        EvalRK4([4745.2, 12000], [6700000, 0], modelMoon=True, simTime=150000, plotE=False)
+        EvalRK4([10796, 0], [0, -6700000], modelMoon=True, simTime=1559200, numPoints=50000)
 
     if answer == 'g':
-        EvalRK4([4745, 12006], [6700000, 0], modelMoon=True, simTime=259200, plotE=False, numPoints=50000)
-
-
-
+        EvalRK4([10793, 0], [0, -6700000], modelMoon=True, simTime=959200, numPoints=50000)
 
     elif answer != 'q':
         print("That was not a valid answer")
@@ -165,3 +181,5 @@ while True:
         break
 
 # $$
+
+

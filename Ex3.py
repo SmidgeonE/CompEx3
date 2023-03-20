@@ -18,6 +18,7 @@ moonX = 0
 
 # Functions to define the acceleration caused by the earth, or moon
 def accelX(x, y, shouldModelMoon=False):
+    """This is just the function that defines the acceleration due to gravity in the x"""
     if shouldModelMoon:
         return (-G * Mearth * x) / ((x ** 2 + y ** 2) ** (3 / 2)) +\
                  (-G * Mmoon * (x-moonX)) / (((x - moonX) ** 2 + (y-moonY) ** 2) ** (3 / 2))
@@ -25,6 +26,7 @@ def accelX(x, y, shouldModelMoon=False):
         return (-G * Mearth * x) / ((x**2 + y**2)**(3/2))
 
 def accelY(x, y, shouldModelMoon=False):
+    """This is just the function that defines the acceleration due to gravity in the y"""
     if shouldModelMoon:
         return (-G * Mearth * y) / ((x ** 2 + y ** 2) ** (3 / 2)) +\
                  (-G * Mmoon * (y-moonY)) / (((x - moonX) ** 2 + (y-moonY) ** 2) ** (3 / 2))
@@ -37,6 +39,7 @@ def EvalRK4(initVel=[0,0], initDisp=[0,0],
             numPoints=1000, simTime=9000,
             plotXY=True, plotE=True,
             modelMoon=False):
+    """This is the main function that holds and evaluates the RK4 algo as well as plots the trajectories"""
     # Finding step size
     h = simTime / numPoints
     vx, vy, x, y = np.zeros(numPoints), np.zeros(numPoints), np.zeros(numPoints), np.zeros(numPoints)
@@ -149,6 +152,81 @@ def EvalRK4(initVel=[0,0], initDisp=[0,0],
         plt.legend()
         plt.show()
 
+
+
+
+# UI function used to collect and validate users desired values.
+defaultX = 6700000
+defaultY = 0
+defaultVx = 0
+defaultVy = 7750
+defaultT = 9000
+
+
+
+
+# Validating Input
+
+def CollectSettings():
+    """This just collects the settings that the user wants and validates them"""
+    print(" -- You may press enter if you want this to be default.\n")
+    desiredX = input(" --Please enter your desired X: \n")
+    if desiredX == "":
+        desiredX = defaultX
+    try:
+        float(desiredX)
+    except:
+        print("\n -That was not a valid distance. Setting to default.\n")
+        desiredX = defaultX
+
+    print(" -- You may press enter if you want this to be default.\n")
+    desiredY = input(" --Please enter your desired Y: \n")
+    if desiredY == "":
+        desiredY = defaultY
+    try:
+        float(desiredY)
+    except:
+        print("\n -That was not a valid distance. Setting to default.\n")
+        desiredY = defaultY
+
+    print(" -- You may press enter if you want this to be default.\n")
+    desiredVx = input(" --Please enter your desired Vx: \n")
+    if desiredVx == "":
+        desiredVx = defaultVx
+    try:
+        float(desiredVx)
+    except:
+        print("\n -That was not a valid distance. Setting to default.\n")
+        desiredVx = defaultVx
+
+    print(" -- You may press enter if you want this to be default.\n")
+    desiredVy = input(" --Please enter your desired Vy: \n")
+    if desiredVy == "":
+        desiredVy = defaultVy
+    try:
+        float(desiredVy)
+    except:
+        print("\n -That was not a valid distance. Setting to default.\n")
+        desiredVy = defaultVy
+
+
+    print(" -- You may press enter if you want this to be default.\n")
+    desiredT = input(" --Please enter your desired time \n")
+    if desiredT == "":
+        desiredT = defaultT
+    try:
+        float(desiredT)
+    except:
+        print("\n -That was not a valid distance. Setting to default.\n")
+        desiredT = defaultT
+    if float(desiredT) < 0:
+        print("\n -That was not a valid distance. Setting to default.\n")
+        desiredT = defaultT
+
+
+    return [float(desiredX), float(desiredY), float(desiredVx), float(desiredVy), int(desiredT)]
+
+
 # Main UI loop
 
 print('------\nWelcome to Exercise 4\n\nObjectives:\n'
@@ -164,7 +242,8 @@ while True:
                    ' --(e) Satellite orbit around Earth (Circular) (With Moon Modeled)\n'
                    ' --(f) Satellite orbit around Moon and Earth\n'
                    ' --(g) Satellite orbit around Moon and Earth (Crash on Moon)\n'
-                   ' --(h) Custom orbit\n')
+                   ' --(h) Custom orbit with Moon\n'
+                   ' --(i) Custom orbit without Moon\n')
 
     if answer == 'a':
         EvalRK4([0, 7750], [6700000, 0], simTime=9000)
@@ -187,8 +266,18 @@ while True:
     if answer == 'g':
         EvalRK4([10793, 0], [0, -6700000], modelMoon=True, simTime=1559200, numPoints=50000)
 
+    if answer == 'h':
+        answers = CollectSettings()
+        EvalRK4([answers[2], answers[3]], [answers[0], answers[1]], modelMoon=True, simTime=answers[4], numPoints=50000)
+
+    if answer == 'i':
+        answers = CollectSettings()
+        EvalRK4([answers[2], answers[3]], [answers[0], answers[1]], modelMoon=False, simTime=answers[4], numPoints=50000)
+
+
     elif answer != 'q':
         print("That was not a valid answer")
+
 
     else:
         print("Thank you")
